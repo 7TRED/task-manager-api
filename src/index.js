@@ -1,8 +1,8 @@
 const express = require('express');
 const chalk = require('chalk');
-require('./src/db/mongoose.js');
-const userRoute = require('./src/routes/userRouter');
-const taskRoute = require('./src/routes/taskRouter');
+require('./db/mongoose.js');
+const userRoute = require('./routes/userRouter');
+const taskRoute = require('./routes/taskRouter');
 const crypto = require('crypto');
 
 
