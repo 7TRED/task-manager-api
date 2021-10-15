@@ -156,7 +156,7 @@ userRoute.get('/users/:id/avatar', async (req, res) => {
         res.send(user.avatar);
 
     } catch (e) {
-        res.status(404).send({error, token:req.token})
+        res.status(404).send({error:e, token:req.token})
     }
 })
 
