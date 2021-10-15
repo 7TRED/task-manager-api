@@ -12,9 +12,9 @@ taskRoute.post("/tasks", auth,async(req, res) => {
             owner: req.user._id
         });
         await task.save();
-        res.status(201).send(task);
+        res.status(201).send({task, token:req.token});
     } catch (e) {
-        res.status(400).send({ status: "failed" });
+        res.status(400).send({ status: "failed" , token:req.token });
     }
 })
 
@@ -38,9 +38,9 @@ taskRoute.get("/tasks", auth, async (req, res) => {
                 sort
             }
         });
-        res.send(req.user.tasks);
+        res.send({tasks: req.user.tasks, token:req.token});
     } catch (e) {
-        res.status(500).send({ status: "failed" });
+        res.status(500).send({ status: "failed", token: req.token });
     }
 })
 
@@ -49,15 +49,15 @@ taskRoute.get("/tasks/:id",auth, (req, res) => {
     const _id = req.params.id;
     Task.findByOne({_id, owner:req.user._id}).then(task => {
         if (!task) {
-            return res.status(404).send();
+            return res.status(404).send({token:req.token});
         }
 
-        res.send(task);
+        res.send({task, token:req.token});
     }).catch((err) => {
         if (err.reason instanceof TypeError) {
-            return res.status(404).send();
+            return res.status(404).send({token:req.token});
         }
-        res.status(500).send();
+        res.status(500).send({token: req.token});
     })
 })
 
@@ -68,28 +68,28 @@ taskRoute.patch("/tasks/:id",auth, async (req, res) => {
     const isValidOperation = updates.every(update => allowedUpdates.includes(update));
 
     if (!isValidOperation) {
-        return res.status(400).send();
+        return res.status(400).send({token:req.token});
     }
 
     try {
         const task = await Task.findOne({ _id: req.params.id, owner: req.user._id });
 
         if (!task) {
-            return res.status(404).send();
+            return res.status(404).send({token: req.token});
         }
         updates.forEach((update) => {task[update] = req.body[update]})
 
         await task.save();
-        res.send(task);
+        res.send({task, token:req.token});
     } catch (err){
         if (err.name === "CastError") {
-            return res.status(404).send();
+            return res.status(404).send({token:req.token});
         }
         if (err.name === "ValidationError") {
-            return res.status(400).send();
+            return res.status(400).send({token:req.token});
         }
 
-        res.status(500).send();
+        res.status(500).send({token:req.token});
 
     }
 })
@@ -98,16 +98,16 @@ taskRoute.delete("/tasks/:id",auth, async (req, res) => {
     try {
         const task = await Task.findOne({_id: req.params.id, owner: req.user._id});
         if (!task) {
-            return res.status(404).send();
+            return res.status(404).send({token: req.token});
         }
         await task.remove();
-        res.send(task);
+        res.send({task, token:req.token});
     } catch (e) {
         if (e.name === "CastError") {
-            return res.status(404).send();
+            return res.status(404).send({token:req.token});
         }
 
-        res.status(500).send();
+        res.status(500).send({token:req.token});
     }
 })
 

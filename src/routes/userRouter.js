@@ -79,7 +79,7 @@ userRoute.patch("/users/me",auth, async (req, res) => {
     const isValidOperation = updates.every((update) => (allowedUpdates.includes(update)))
     
     if (!isValidOperation) {
-        return res.status(400).send();
+        return res.status(400).send({token:req.token});
     }
     try {
         
@@ -90,10 +90,10 @@ userRoute.patch("/users/me",auth, async (req, res) => {
         res.send({user: req.user.getPublicProfile(), token:req.token});
     } catch (err) {
         if (err.name === "ValidationError") {
-            return res.status(400).send(err);
+            return res.status(400).send({error:err, token:req.token});
         }
     
-        res.status(500).send(err);
+        res.status(500).send({error:err, token:req.token});
 
     }
 })
@@ -104,10 +104,10 @@ userRoute.delete("/users/me",auth, async(req, res) => {
     try {
         await req.user.remove();
         sendCancellationEmail(req.user.email, req.user.firstName);
-        res.send({user: req.user.getPublicProfile(), token:req.token});
+        res.send({user: req.user.getPublicProfile()});
 
     } catch (e) {
-        res.status(500).send({status:"failed"});
+        res.status(500).send({status:"failed", token:req.token});
     }
 })
 
@@ -134,7 +134,7 @@ userRoute.post('/users/me/avatar', auth, upload.single('avatar'), async (req, re
     res.send({ token: req.token });
 
 }, (error, req, res, next) => {
-    res.status(400).send({error:error.message});
+    res.status(400).send({error:error.message, token: req.token});
 })
 
 userRoute.delete('/users/me/avatar', auth, upload.single('avatar'), async (req, res) => {
@@ -142,7 +142,7 @@ userRoute.delete('/users/me/avatar', auth, upload.single('avatar'), async (req, 
     await req.user.save();
     res.send({ token: req.token });
 }, (error, req, res, next) => {
-    res.status(400).send({ error: error.message });
+    res.status(400).send({ error: error.message, token:req.token });
 });
 
 userRoute.get('/users/:id/avatar', async (req, res) => {
